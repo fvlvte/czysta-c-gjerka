@@ -18,5 +18,19 @@
     <ClCompile Include="entry.c">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="window.win32.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="system.win32.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="window.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="system.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>

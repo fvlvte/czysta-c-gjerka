@@ -113,6 +113,10 @@
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <EntryPointSymbol>entry</EntryPointSymbol>
       <AdditionalOptions>/NODEFAULTLIB %(AdditionalOptions)</AdditionalOptions>
+      <StackReserveSize>
+      </StackReserveSize>
+      <StackCommitSize>
+      </StackCommitSize>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
@@ -133,6 +137,12 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="entry.c" />
+    <ClCompile Include="system.win32.c" />
+    <ClCompile Include="window.win32.c" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="system.h" />
+    <ClInclude Include="window.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
