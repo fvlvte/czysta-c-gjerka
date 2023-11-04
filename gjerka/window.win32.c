@@ -1,5 +1,11 @@
 ﻿#include "window.h"
+#include "system.h"
+
 #include <Windows.h> // Bibloteka WinAPI - jedyna z której będziemy korzystać.
+
+#include <gl/GL.h>
+
+int _fltused = 0;
 
 // ATOM to customowy typ microsoftu ale generalnie jest to zwykły uchwyt.
 // Custom typy są po to żeby programista sie nie pomylił z typem uchwytu generalnie.
@@ -7,6 +13,19 @@
 // On zwróci nam do registeredClass właśnie uchwyt do naszej klasy który będzie przydatny w momencie chęci jej wykorzystania.
 // Persistent zmienna statyczna zawierająca naszą klase okna lub null.
 static ATOM CLASS_INSTANCE = (ATOM)NULL;
+
+unsigned long long _ts() // ms timestamp
+{
+	LARGE_INTEGER li;
+	LARGE_INTEGER fq;
+	QueryPerformanceCounter(&li);
+	QueryPerformanceFrequency(&fq);
+
+	li.QuadPart *= 1000;
+	li.QuadPart /= fq.QuadPart;
+	
+	return li.QuadPart;
+}
 
 
 // Funckja typu boilerplate przyjmująca zdarzenia o oknie od systemu operacyjnego.
@@ -78,7 +97,7 @@ window* createWindow(const char* title, unsigned int width, unsigned int height)
 
 	// Allokujemy obiekt dla naszego okna.
 	// Dlaczego? Bo żeby to było cross platformowe to musimy je owrapować w naszą strukture window.
-	window* instance = HeapAlloc(GetProcessHeap(), 0, sizeof(*instance));
+	window* instance = knurmalloc(sizeof(*instance));
 
 	// Funckja CreateWindowExA utworzy nasze okno i zwróci nam do niego uchwyt.
 	// Co to są te uchwyty? To jest po prostu zmienna która jest wskaźnikiem do naszego okna.
@@ -108,7 +127,48 @@ window* createWindow(const char* title, unsigned int width, unsigned int height)
 		SW_SHOW // SW_SHOW to flaga która mówi, że windows ma pokazać to okno, analogicznie SW_HIDE ukryje to okno
 	);
 
+	HDC context = GetDC(wnd);
+
+	PIXELFORMATDESCRIPTOR pfd = {
+		sizeof(PIXELFORMATDESCRIPTOR), // Size of this structure,
+		1, // Structure version
+		PFD_DRAW_TO_WINDOW | PFD_SUPPORT_OPENGL | PFD_DOUBLEBUFFER, // Flags
+		32, // Color bits
+		8, // R
+		0, // R-S
+		8, // G
+		0, // G-S
+		8, // B
+		0, // B-S
+		8, // A
+		0, // A-S
+		32, // Accum
+		8, 8, 8, 8, // Depth
+		24,
+		8, // Stencil
+		0, // AUX
+		PFD_MAIN_PLANE,
+		0, // Visible mask
+		0 // Damage mask
+	};
+
+	int result = ChoosePixelFormat(context, &pfd);
+
+	BOOL ret = SetPixelFormat(context, result, &pfd);
+
+	HGLRC glInstance = wglCreateContext(context);
+
+	ret = wglMakeCurrent(context, glInstance);
+
 	instance->system_impl = (void*)wnd;
+	instance->lastFrame = _ts();
+	instance->animationState = 0.0;
+	instance->animModifier = 1.0;
+
+	RECT    rcCli;
+	GetClientRect(WindowFromDC(context), &rcCli);
+	instance->width = (float)rcCli.right;
+	instance->height = (float)rcCli.bottom;
 
 	return instance;
 }
@@ -119,9 +179,49 @@ void closeWindow(window* instance)
 	CloseWindow((HWND)instance->system_impl);
 
 	// Zwalniamy pamięć zaalokowaną dynamicznie.
-	HeapFree(GetProcessHeap(), 0, instance);
+	knurfree(instance);
 }
 
+void renderRect(float x, float y, float w, float h)
+{
+	glColor4f(1.0f, 0.0f, 0.0f, 1.0f);
+	glBegin(GL_QUADS);
+	glVertex3f(x, y, 0.0f);
+	glVertex3f(x + w, y, 0.0f);
+	glVertex3f(x + w, y + h, 0.0f);
+	glVertex3f(x, y + h, 0.0f);
+	glEnd();
+}
+
+void renderFrame(window* instance)
+{
+	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+	glLoadIdentity();
+	glOrtho(0.0l, 500.0l, 500.0l, 0.0l, -1.0l, 1.0l);
+	glViewport(0, 0, 500, 500);
+
+	unsigned long long ts = _ts();
+
+	float delta = ((float)(ts - instance->lastFrame)) / 1000.f;
+	instance->lastFrame = ts;
+	instance->animationState = instance->animationState + (60.0f * delta * instance->animModifier);
+
+
+	if (instance->animationState + 200.0 >= instance->width)
+	{
+		instance->animModifier = -1.0;
+	}
+	else if (instance->animationState <= 0.0)
+	{
+		instance->animModifier = 1.0;
+	}
+
+	renderRect(0.0 + instance->animationState, 50.0, 200.0, 200.0);
+
+	HDC dc = GetDC(instance->system_impl);
+	SwapBuffers(dc);
+	ReleaseDC(instance->system_impl, dc);
+}
 
 void updateWindow(window* instance)
 {

@@ -4,6 +4,11 @@
 struct window
 {
 	void* system_impl; // Uchwyt systemow - inny dla windowsa / linuxa / maca / etc ...
+	unsigned long long lastFrame;
+	float animationState;
+	float animModifier;
+	float width;
+	float height;
 };
 typedef struct window window;
 
@@ -15,6 +20,8 @@ void closeWindow(window* instance);
 
 // 1 jeśli okno jest otwarte, 0 zamknięte
 int isWindowOpen(window* instance);
+
+void renderFrame(window* instance);
 
 // Przetwarza eventy z okna.
 void updateWindow(window* instance);

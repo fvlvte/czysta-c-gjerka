@@ -48,6 +48,7 @@ void entry()
 	while (isWindowOpen(window)) // Przerywamy tą pętle gdy okno zostanie zamknięte.
 	{
 		updateWindow(window); // Funkcja która przetwarza eventy które okno otrzymało od systemu operacyjnego i na nie reaguje.
+		renderFrame(window);
 	}
 
 	// Kończymy nasz program w sposób elegancki i zwracamy do systemu operacyjnego kod jego wyjścia - 2137.
