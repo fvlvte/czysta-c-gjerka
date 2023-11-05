@@ -139,10 +139,12 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="entry.c" />
+    <ClCompile Include="image.c" />
     <ClCompile Include="system.win32.c" />
     <ClCompile Include="window.win32.c" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="image.h" />
     <ClInclude Include="system.h" />
     <ClInclude Include="window.h" />
   </ItemGroup>

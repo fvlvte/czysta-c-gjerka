@@ -1,11 +1,16 @@
 ﻿#include "window.h"
 #include "system.h"
+#include "image.h"
 
 #include <Windows.h> // Bibloteka WinAPI - jedyna z której będziemy korzystać.
 
 #include <gl/GL.h>
 
+#define GL_BGRA                           0x80E1
+
 int _fltused = 0;
+
+GLint txx;
 
 // ATOM to customowy typ microsoftu ale generalnie jest to zwykły uchwyt.
 // Custom typy są po to żeby programista sie nie pomylił z typem uchwytu generalnie.
@@ -13,13 +18,13 @@ int _fltused = 0;
 // On zwróci nam do registeredClass właśnie uchwyt do naszej klasy który będzie przydatny w momencie chęci jej wykorzystania.
 // Persistent zmienna statyczna zawierająca naszą klase okna lub null.
 static ATOM CLASS_INSTANCE = (ATOM)NULL;
+static LARGE_INTEGER fq;
 
 unsigned long long _ts() // ms timestamp
 {
 	LARGE_INTEGER li;
-	LARGE_INTEGER fq;
+	
 	QueryPerformanceCounter(&li);
-	QueryPerformanceFrequency(&fq);
 
 	li.QuadPart *= 1000;
 	li.QuadPart /= fq.QuadPart;
@@ -93,6 +98,7 @@ static void _checkAndRegisterClassIfNotExists()
 
 window* createWindow(const char* title, unsigned int width, unsigned int height)
 {
+	QueryPerformanceFrequency(&fq);
 	_checkAndRegisterClassIfNotExists(); // Zobacz co robi wyżej.
 
 	// Allokujemy obiekt dla naszego okna.
@@ -170,6 +176,21 @@ window* createWindow(const char* title, unsigned int width, unsigned int height)
 	instance->width = (float)rcCli.right;
 	instance->height = (float)rcCli.bottom;
 
+	GLint tex[1];
+
+	image* i = loadBitmap("uwu.bmp");
+
+
+	glEnable(GL_TEXTURE_2D);
+	glGenTextures(1, tex);
+	glBindTexture(GL_TEXTURE_2D, tex[0]);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, i->width, i->height, 0, GL_BGRA, GL_UNSIGNED_BYTE, i->data);
+
+	glDisable(GL_TEXTURE_2D);
+	txx = tex[0];
+
 	return instance;
 }
 
@@ -184,13 +205,32 @@ void closeWindow(window* instance)
 
 void renderRect(float x, float y, float w, float h)
 {
-	glColor4f(1.0f, 0.0f, 0.0f, 1.0f);
+	//glColor4f(1.0f, 0.0f, 0.0f, 1.0f);
+	glEnable(GL_TEXTURE_2D);
+	glBindTexture(GL_TEXTURE_2D, txx);
+	//glEnable(GL_BLEND);
+	//glBlendFunc(GL_SRC_ALPHA, GL_ONE_P);
+
+	glMatrixMode(GL_TEXTURE);
+	glLoadIdentity();
+	glScalef(1.0f, -1.0f, 1.0);
+
 	glBegin(GL_QUADS);
+	glTexCoord2f(0.0, 0.0);
 	glVertex3f(x, y, 0.0f);
+	glTexCoord2f(1.0, 0.0);
 	glVertex3f(x + w, y, 0.0f);
+	glTexCoord2f(1.0, 1.0);
 	glVertex3f(x + w, y + h, 0.0f);
+	glTexCoord2f(0.0, 1.0);
 	glVertex3f(x, y + h, 0.0f);
+
 	glEnd();
+
+
+	glDisable(GL_TEXTURE_2D);
+	glBindTexture(GL_TEXTURE_2D, 0);
+	//glDisable(GL_BLEND);
 }
 
 void renderFrame(window* instance)

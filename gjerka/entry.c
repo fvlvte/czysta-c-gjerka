@@ -1,5 +1,6 @@
 ﻿#include "window.h"
 #include "system.h"
+#include "image.h"
 
 // Konstrukt funckji
 // {typ} {nazwa symbolu}({typ} {nazwa})
