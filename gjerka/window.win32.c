@@ -7,39 +7,49 @@
 
 int _fltused = 0;
 
-GLint txx;
-
 // ATOM to customowy typ microsoftu ale generalnie jest to zwykły uchwyt.
 // Custom typy są po to żeby programista sie nie pomylił z typem uchwytu generalnie.
 // Wywołujemy RegisterClassExA podając wskaźnik do naszej struktury klasy okna żeby poinformować Windows, że chcemy ją stworzyć.
 // On zwróci nam do registeredClass właśnie uchwyt do naszej klasy który będzie przydatny w momencie chęci jej wykorzystania.
 // Persistent zmienna statyczna zawierająca naszą klase okna lub null.
 static ATOM CLASS_INSTANCE = (ATOM)NULL;
-static LARGE_INTEGER fq;
-
-unsigned long long _ts() // ms timestamp
-{
-	LARGE_INTEGER li;
-	
-	QueryPerformanceCounter(&li);
-
-	li.QuadPart *= 1000;
-	li.QuadPart /= fq.QuadPart;
-	
-	return li.QuadPart;
-}
-
 
 // Funckja typu boilerplate przyjmująca zdarzenia o oknie od systemu operacyjnego.
 // Aktualnie mock up, będziemy rozwijać ją w przyszłości.
 LRESULT eventHandler(
-	HWND unnamedParam1,
-	UINT unnamedParam2,
-	WPARAM unnamedParam3,
-	LPARAM unnamedParam4
+	HWND hWnd,
+	UINT uMsg,
+	WPARAM wParam,
+	LPARAM lParam
 )
 {
-	return DefWindowProcA(unnamedParam1, unnamedParam2, unnamedParam3, unnamedParam4);
+	window* w = (window*)GetWindowLongPtrW(hWnd, GWLP_USERDATA);
+
+	if (uMsg == WM_SIZE)
+	{
+		
+		RECT    rcCli;
+		GetClientRect(hWnd, &rcCli);
+		w->width = (float)rcCli.right;
+		w->height = (float)rcCli.bottom;
+
+		return DefWindowProcA(hWnd, uMsg, wParam, lParam);
+	}
+	else if (uMsg == WM_KEYDOWN || uMsg == WM_KEYUP)
+	{
+		if (w->inputStackSize < MAX_QUEUE_SIZE)
+		{
+			input* i = &w->inputStack[w->inputStackSize++];
+			i->type = uMsg == WM_KEYDOWN ? EVENT_KEYDOWN : EVENT_KEYUP;
+			i->paramA = wParam;
+		}
+
+		return DefWindowProcA(hWnd, uMsg, wParam, lParam);
+	}
+	else
+	{
+		return DefWindowProcA(hWnd, uMsg, wParam, lParam);
+	}
 }
 
 // Funckja pomocnicza która sprawdza czy nasza klasa okna istnieje.
@@ -95,7 +105,6 @@ static void _checkAndRegisterClassIfNotExists()
 
 window* createWindow(const char* title, unsigned int width, unsigned int height)
 {
-	QueryPerformanceFrequency(&fq);
 	_checkAndRegisterClassIfNotExists(); // Zobacz co robi wyżej.
 
 	// Allokujemy obiekt dla naszego okna.
@@ -119,6 +128,8 @@ window* createWindow(const char* title, unsigned int width, unsigned int height)
 		NULL, // Nieistotny parametr więc NULL.
 		NULL // Nieistotny parametr więc NULL.
 	);
+
+	SetWindowLongPtrW(wnd, GWLP_USERDATA, instance);
 
 	// No i już prawie sukces boży.
 	// Tylko nasze okno które się utworzyło jest niewidoczne.
@@ -164,30 +175,24 @@ window* createWindow(const char* title, unsigned int width, unsigned int height)
 	ret = wglMakeCurrent(context, glInstance);
 
 	instance->system_impl = (void*)wnd;
-	instance->lastFrame = _ts();
 	instance->animationState = 0.0;
 	instance->animModifier = 1.0;
+	instance->system_param = (void*)context;
+	instance->inputStackSize = 0;
 
 	RECT    rcCli;
 	GetClientRect(WindowFromDC(context), &rcCli);
 	instance->width = (float)rcCli.right;
 	instance->height = (float)rcCli.bottom;
 
-	GLint tex[1];
 
-	image* i = loadBitmap("uwu.bmp");
-
-	glEnable(GL_TEXTURE_2D);
-	glGenTextures(1, tex);
-	glBindTexture(GL_TEXTURE_2D, tex[0]);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, (GLsizei)i->width, (GLsizei)i->height, 0, GL_BGRA_EXT, GL_UNSIGNED_BYTE, i->data);
-
-	glDisable(GL_TEXTURE_2D);
-	txx = tex[0];
 
 	return instance;
+}
+
+void flushRender(window* instance)
+{
+	SwapBuffers((HDC)instance->system_param);
 }
 
 void closeWindow(window* instance)
@@ -197,66 +202,6 @@ void closeWindow(window* instance)
 
 	// Zwalniamy pamięć zaalokowaną dynamicznie.
 	knurfree(instance);
-}
-
-void renderRect(float x, float y, float w, float h)
-{
-	//glColor4f(1.0f, 0.0f, 0.0f, 1.0f);
-	glEnable(GL_TEXTURE_2D);
-	glBindTexture(GL_TEXTURE_2D, txx);
-	//glEnable(GL_BLEND);
-	//glBlendFunc(GL_SRC_ALPHA, GL_ONE_P);
-
-	glMatrixMode(GL_TEXTURE);
-	glLoadIdentity();
-	glScalef(1.0f, -1.0f, 1.0);
-
-	glBegin(GL_QUADS);
-	glTexCoord2f(0.0, 0.0);
-	glVertex3f(x, y, 0.0f);
-	glTexCoord2f(1.0, 0.0);
-	glVertex3f(x + w, y, 0.0f);
-	glTexCoord2f(1.0, 1.0);
-	glVertex3f(x + w, y + h, 0.0f);
-	glTexCoord2f(0.0, 1.0);
-	glVertex3f(x, y + h, 0.0f);
-
-	glEnd();
-
-
-	glDisable(GL_TEXTURE_2D);
-	glBindTexture(GL_TEXTURE_2D, 0);
-	//glDisable(GL_BLEND);
-}
-
-void renderFrame(window* instance)
-{
-	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-	glLoadIdentity();
-	glOrtho(0.0l, 500.0l, 500.0l, 0.0l, -1.0l, 1.0l);
-	glViewport(0, 0, 500, 500);
-
-	unsigned long long ts = _ts();
-
-	float delta = ((float)(ts - instance->lastFrame)) / 1000.f;
-	instance->lastFrame = ts;
-	instance->animationState = instance->animationState + (60.0f * delta * instance->animModifier);
-
-
-	if (instance->animationState + 200.0 >= instance->width)
-	{
-		instance->animModifier = -1.0;
-	}
-	else if (instance->animationState <= 0.0)
-	{
-		instance->animModifier = 1.0;
-	}
-
-	renderRect(0.0f + instance->animationState, 50.0f, 200.0f, 200.0f);
-
-	HDC dc = GetDC(instance->system_impl);
-	SwapBuffers(dc);
-	ReleaseDC(instance->system_impl, dc);
 }
 
 void updateWindow(window* instance)

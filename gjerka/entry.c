@@ -1,6 +1,7 @@
 ﻿#include "window.h"
 #include "system.h"
 #include "image.h"
+#include "core.h"
 
 // Konstrukt funckji
 // {typ} {nazwa symbolu}({typ} {nazwa})
@@ -41,16 +42,8 @@
 // Jeśli chcemy zwrócić status code i prawidłowo zakończyć program musimy wywołać syscall który to dla nas zrobi (na WinAPI jest to ExitProcess(code) na -nixach jest to exit(code)).
 void entry()
 {
-	//Tu zaczyna się nasz program - jeszcze nic nie zrobił poza inicjalizacją pamięci statycznej (stacka).
-	window* window = createWindow("uwu kocham widzuw uwu", 500, 500);
-
-
-	// Pętla w której przyjmujemy eventy od okna i aktualizujemy je żeby się nie zfreezowało.
-	while (isWindowOpen(window)) // Przerywamy tą pętle gdy okno zostanie zamknięte.
-	{
-		updateWindow(window); // Funkcja która przetwarza eventy które okno otrzymało od systemu operacyjnego i na nie reaguje.
-		renderFrame(window);
-	}
+	coreMain();
+	
 
 	// Kończymy nasz program w sposób elegancki i zwracamy do systemu operacyjnego kod jego wyjścia - 2137.
 	// Generalnie statusy nie mają żadnego znaczenia chyba, że inny process korzysta z waszego procesu.

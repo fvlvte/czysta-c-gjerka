@@ -69,5 +69,16 @@ uint64_t fileSize(file f)
 	return (uint64_t)li.QuadPart;
 }
 
+unsigned long long highResolutionTimestamp() // ms timestamp
+{
+	LARGE_INTEGER li;
+	LARGE_INTEGER fq;
 
+	QueryPerformanceFrequency(&fq);
+	QueryPerformanceCounter(&li);
 
+	li.QuadPart *= 1000;
+	li.QuadPart /= fq.QuadPart;
+
+	return li.QuadPart;
+}
