@@ -2,11 +2,8 @@
 #include "system.h"
 #include "image.h"
 
-#include <Windows.h> // Bibloteka WinAPI - jedyna z której będziemy korzystać.
-
-#include <gl/GL.h>
-
-#define GL_BGRA                           0x80E1
+#include <Windows.h>	// Bibloteka WinAPI - jedyna z której będziemy korzystać.
+#include <gl/GL.h>		// Specyfikacja OpenGL
 
 int _fltused = 0;
 
@@ -81,7 +78,7 @@ static void _checkAndRegisterClassIfNotExists()
 		windowClass.hIcon = NULL;
 		// Kursor jaki ma być w naszym oknie - IDC_ARROW to zwykła strzałka/
 		windowClass.hCursor =
-			LoadCursorA(NULL, IDC_ARROW); // Dokumentacja LoadCursorA https://learn.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-loadcursora
+			LoadCursorW(NULL, IDC_ARROW); // Dokumentacja LoadCursorA https://learn.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-loadcursora
 		// Tło naszego okna - jakieś tam defaultowe nieistotne.
 		windowClass.hbrBackground = (HBRUSH)COLOR_BACKGROUND;
 		// Nazwa menu - nieistotna jest to bardzo legacy feature okienek więc NULL bo nas to nie interesuje.
@@ -180,13 +177,12 @@ window* createWindow(const char* title, unsigned int width, unsigned int height)
 
 	image* i = loadBitmap("uwu.bmp");
 
-
 	glEnable(GL_TEXTURE_2D);
 	glGenTextures(1, tex);
 	glBindTexture(GL_TEXTURE_2D, tex[0]);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, i->width, i->height, 0, GL_BGRA, GL_UNSIGNED_BYTE, i->data);
+	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, (GLsizei)i->width, (GLsizei)i->height, 0, GL_BGRA_EXT, GL_UNSIGNED_BYTE, i->data);
 
 	glDisable(GL_TEXTURE_2D);
 	txx = tex[0];
@@ -256,7 +252,7 @@ void renderFrame(window* instance)
 		instance->animModifier = 1.0;
 	}
 
-	renderRect(0.0 + instance->animationState, 50.0, 200.0, 200.0);
+	renderRect(0.0f + instance->animationState, 50.0f, 200.0f, 200.0f);
 
 	HDC dc = GetDC(instance->system_impl);
 	SwapBuffers(dc);

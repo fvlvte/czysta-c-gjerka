@@ -19,7 +19,7 @@ image* loadBitmap(const char* path)
 
 	if (
 		_i.planeCount != 1 || 
-		_i.compression != 3 || // ARGB
+		_i.compression != 3 || // Color encoding.
 		_i.bitCount != 32 || 
 		_i.width != _i.height || 
 		h.magic1 != 'B' || 

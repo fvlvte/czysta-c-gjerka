@@ -17,7 +17,7 @@ inline void _heapHandleCache()
 	}
 }
 
-void* knurmalloc(unsigned int size)
+void* knurmalloc(uint64_t size)
 {
 	_heapHandleCache();
 	return HeapAlloc(HEAP_HANDLE_CACHE, 0, size);
@@ -43,7 +43,7 @@ void closeFile(file f)
 int64_t readFile(file f, void* out, uint64_t size)
 {
 	DWORD os;
-	if (ReadFile((HANDLE)f, out, size, &os, NULL) == TRUE)
+	if (ReadFile((HANDLE)f, out, (DWORD)size, &os, NULL) == TRUE)
 	{
 		return (int64_t)os;
 	}
@@ -53,7 +53,7 @@ int64_t readFile(file f, void* out, uint64_t size)
 int64_t writeFile(file f, void* in, uint64_t size)
 {
 	DWORD is;
-	if (WriteFile((HANDLE)f, in, size, &is, NULL) == TRUE)
+	if (WriteFile((HANDLE)f, in, (DWORD)size, &is, NULL) == TRUE)
 	{
 		return (int64_t)is;
 	}
