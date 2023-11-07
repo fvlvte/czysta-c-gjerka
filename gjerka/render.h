@@ -38,8 +38,17 @@ struct _rect
 };
 typedef struct _rect rect;
 
+void initRenderer(window* w);
 void beginFrame(window* w);
 void endFrame(window* w);
+
+void drawUtf8text(window* wnd,
+	void* f,
+	float scale,
+	color* c,
+	const char* text,
+	rect* rect,
+	uint64_t shouldRender);
 
 #define TEXTURE_PIXEL_FORMAT_RGBA 0b1
 

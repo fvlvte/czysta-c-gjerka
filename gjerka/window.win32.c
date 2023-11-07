@@ -1,6 +1,7 @@
 ﻿#include "window.h"
 #include "system.h"
 #include "image.h"
+#include "render.h"
 
 #include <Windows.h>	// Bibloteka WinAPI - jedyna z której będziemy korzystać.
 #include <gl/GL.h>		// Specyfikacja OpenGL
@@ -119,8 +120,8 @@ window* createWindow(const char* title, unsigned int width, unsigned int height)
 		(LPCSTR)CLASS_INSTANCE, // Uchwyt albo nazwa naszej klasy okna - ja wybrałem uchwyt - ale castuje go do typu jaki ta funkcja chce żeby kompilator nie płakał.
 		title, // Nazwa naszego okienka.
 		WS_TILEDWINDOW, // Styl okna - WS_TILEDWINDOW to takie najbardziej generyczne okno windowsowe.
-		500, // Kordynat X gdzie ma pojawić się na ekranie.
-		500, // Kordynat Y gdzie ma pojawić się na ekranie.
+		width, // Kordynat X gdzie ma pojawić się na ekranie.
+		height, // Kordynat Y gdzie ma pojawić się na ekranie.
 		width, // Szerokość w px.
 		height, // Wysokość w px.
 		NULL, // Okno rodzic - nie mamy więc NULL.
@@ -172,6 +173,9 @@ window* createWindow(const char* title, unsigned int width, unsigned int height)
 
 	HGLRC glInstance = wglCreateContext(context);
 
+	instance->framesPerformanceStart = highResolutionTimestamp();
+	instance->framesRendered = 0;
+
 	ret = wglMakeCurrent(context, glInstance);
 
 	instance->system_impl = (void*)wnd;
@@ -185,7 +189,7 @@ window* createWindow(const char* title, unsigned int width, unsigned int height)
 	instance->width = (float)rcCli.right;
 	instance->height = (float)rcCli.bottom;
 
-
+	initRenderer(instance);
 
 	return instance;
 }
@@ -193,6 +197,7 @@ window* createWindow(const char* title, unsigned int width, unsigned int height)
 void flushRender(window* instance)
 {
 	SwapBuffers((HDC)instance->system_param);
+	instance->framesRendered++;
 }
 
 void closeWindow(window* instance)
@@ -212,7 +217,7 @@ void updateWindow(window* instance)
 	// Dlaczego tak? Bo działamy w obrębie jednego wątku i musimy przetwarzać te eventy w miare ujednolicony sposób żeby nasze okienko się nie zafreezowało.
 	MSG msg;
 
-	while (PeekMessageA(&msg, 0, 0, 0, 1)) // Dokumentacja PeekMessageA https://learn.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-peekmessagea
+	if (PeekMessageA(&msg, 0, 0, 0, 1)) // Dokumentacja PeekMessageA https://learn.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-peekmessagea
 	{
 		TranslateMessage(&msg); // Dokumentacja TranslateMessage https://learn.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-translatemessage
 		DispatchMessageA(&msg); // Dokumentacja DispatchMessageA https://learn.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-dispatchmessagea

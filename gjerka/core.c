@@ -3,15 +3,7 @@
 #include "image.h"
 #include "game.h"
 #include "system.h"
-
-#define PLAYER_MOMENTUM_MUL_MAX 2.137
-
-struct _playerBase
-{
-	float speedPerSecond;
-	float momentum;
-};
-typedef struct _playerBase playerBase;
+#include "font.h"
 
 void spawnPlayer(world* w, texture* tex)
 {
@@ -77,7 +69,7 @@ void coreMain(void)
 
 	w->entityCount = 0;
 	
-	c->targetWindow = createWindow("uwu kocham widzuw uwu", 500, 500);
+	c->targetWindow = createWindow("uwu kocham widzuw uwu", 800, 600);
 
 	texture t;
 
@@ -90,6 +82,12 @@ void coreMain(void)
 
 	freeImage(i);
 
+	font* ff = getDefaultFont();
+
+
+	float scaleModifier = 0.0;
+
+
 	while (isWindowOpen(c->targetWindow)) // Przerywamy tą pętle gdy okno zostanie zamknięte.
 	{
 		updateWindow(c->targetWindow); // Funkcja która przetwarza eventy które okno otrzymało od systemu operacyjnego i na nie reaguje.
@@ -100,30 +98,30 @@ void coreMain(void)
 
 			if (input->type == EVENT_KEYDOWN)
 			{
-				if (input->paramA == 'w' || input->paramA == 'W')
+				if (input->paramA == 'W')
 				{
 					w->movingVectorY = -1.0f;
 				}
-				else if (input->paramA == 's' || input->paramA == 'S')
+				else if (input->paramA == 'S')
 				{
 					w->movingVectorY = 1.0f;
 				}
-				else if (input->paramA == 'a' || input->paramA == 'A')
+				else if (input->paramA == 'A')
 				{
 					w->movingVectorX = -1.0f;
 				}
-				else if (input->paramA == 'd' || input->paramA == 'D')
+				else if (input->paramA == 'D')
 				{
 					w->movingVectorX = 1.0f;
 				}
 			}
 			if (input->type == EVENT_KEYUP)
 			{
-				if (input->paramA == 'w' || input->paramA == 'W' || input->paramA == 's' || input->paramA == 'S')
+				if (input->paramA == 'W' || input->paramA == 'S')
 				{
 					w->movingVectorY = 0.0f;
 				}
-				else if (input->paramA == 'a' || input->paramA == 'A' || input->paramA == 'd' || input->paramA == 'D')
+				else if (input->paramA == 'A' || input->paramA == 'D')
 				{
 					w->movingVectorX = 0.0f;
 				}
@@ -131,8 +129,6 @@ void coreMain(void)
 		}
 
 		beginFrame(c->targetWindow);
-
-		simulatePlayerMovement(w);
 		
 		for (x = 0; x < w->entityCount; x++)
 		{
@@ -141,6 +137,26 @@ void coreMain(void)
 			rect computedDimensions = { e->vX, e->vY, e->width, e->height };
 			drawRectangle(e->texture, &e->textureDimensions, &computedDimensions, NULL, 0);
 		}
+
+		uint64_t current = highResolutionTimestamp();
+
+		uint64_t diff = current - w->previousUpdateTick;
+
+		double updateDelta = ((double)diff) / 1000.0l;
+
+		scaleModifier += updateDelta * 0.1;
+
+		if (scaleModifier >= 1.40)
+			scaleModifier = 1.40;
+
+		rect computed;
+		// TODO: fix guwno spacing liczenie width
+		drawUtf8text(c->targetWindow, ff, 1.0f * scaleModifier, NULL, "POTWORZYCA W KRAINIE CHARUW", &computed, 0);
+
+		rect textRect = { c->targetWindow->width / 2 - computed.w / 2, c->targetWindow->height / 2 - computed.h / 2, 0, 0 };
+		drawUtf8text(c->targetWindow, ff, 1.0f * scaleModifier, NULL, "POTWORZYCA W KRAINIE CHARUW", &textRect, 1);
+
+		simulatePlayerMovement(w);
 
 		endFrame(c->targetWindow);
 	}

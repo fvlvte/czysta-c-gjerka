@@ -41,7 +41,7 @@
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" Label="Configuration">
     <ConfigurationType>Application</ConfigurationType>
-    <UseDebugLibraries>false</UseDebugLibraries>
+    <UseDebugLibraries>true</UseDebugLibraries>
     <PlatformToolset>v143</PlatformToolset>
     <CharacterSet>NotSet</CharacterSet>
     <PreferredToolArchitecture>x64</PreferredToolArchitecture>
@@ -150,6 +150,8 @@
   <ItemGroup>
     <ClCompile Include="core.c" />
     <ClCompile Include="entry.c" />
+    <ClCompile Include="font.c" />
+    <ClCompile Include="font_0_64.c" />
     <ClCompile Include="image.c" />
     <ClCompile Include="render.opengl.c" />
     <ClCompile Include="system.win32.c" />
@@ -157,6 +159,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="core.h" />
+    <ClInclude Include="font.h" />
     <ClInclude Include="game.h" />
     <ClInclude Include="image.h" />
     <ClInclude Include="render.h" />

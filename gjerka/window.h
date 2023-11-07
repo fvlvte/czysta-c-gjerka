@@ -2,7 +2,7 @@
 
 #include <stdint.h>
 
-#define MAX_QUEUE_SIZE 256
+#define MAX_QUEUE_SIZE 2137
 
 #define EVENT_KEYDOWN	1
 #define EVENT_KEYUP		2
@@ -27,6 +27,9 @@ struct window
 	float animModifier;
 	float width;
 	float height;
+
+	uint64_t		framesRendered;
+	uint64_t		framesPerformanceStart;
 
 	input			inputStack[MAX_QUEUE_SIZE];
 	uint64_t		inputStackSize;

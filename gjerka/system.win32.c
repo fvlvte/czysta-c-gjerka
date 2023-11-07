@@ -82,3 +82,13 @@ unsigned long long highResolutionTimestamp() // ms timestamp
 
 	return li.QuadPart;
 }
+
+uint64_t knurstrlen(const char* str)
+{
+	uint64_t result = 0;
+
+	while (*(str++) != 0)
+		result++;
+
+	return result;
+}

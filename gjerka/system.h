@@ -16,5 +16,6 @@ void closeFile(file file);
 int64_t readFile(file f, void* out, uint64_t size);
 int64_t writeFile(file f, void* in, uint64_t size);
 uint64_t fileSize(file f);
+uint64_t knurstrlen(const char* str);
 
 unsigned long long highResolutionTimestamp();

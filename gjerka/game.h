@@ -36,3 +36,12 @@ struct _world
 	entityBase entityTable[ENTITY_MAX];
 };
 typedef struct _world world;
+
+#define PLAYER_MOMENTUM_MUL_MAX 2.137
+
+struct _playerBase
+{
+	float speedPerSecond;
+	float momentum;
+};
+typedef struct _playerBase playerBase;

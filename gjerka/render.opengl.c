@@ -1,6 +1,12 @@
 #include <Windows.h>
 #include <gl/GL.h>
 #include "render.h"
+#include "font.h"
+
+void initRenderer(window* w)
+{
+	fontManagerInit();
+}
 
 void beginFrame(window* w)
 {
@@ -15,6 +21,126 @@ void endFrame(window* w)
 {
 	glFlush();
 	flushRender(w);
+}
+
+void drawUtf8text(window* wnd,
+	font* f,
+	float scale,
+	color* c,
+	const char* text,
+	rect* rect,
+	uint64_t shouldRender)
+{
+	glyph* prev_g = NULL;
+	glyph* g = NULL;
+
+	float x = rect->x;
+	float y = rect->y;
+
+	float curx = (float)x;
+	float cury = (float)y;
+	uint64_t len = knurstrlen(text);
+	uint64_t i, z;
+	kerning* k;
+
+	if (shouldRender == 0)
+	{
+		rect->h = f->baseScale * scale;
+		rect->w = 0.0f;
+	}
+
+	for (i = 0; i < len; i++)
+	{
+
+		if (text[i] == '\n')
+		{
+			curx = rect->x;
+			y = y + f->baseScale * scale;
+			cury = y;
+
+			if (shouldRender == 0)
+			{
+				rect->h += f->baseScale * scale;
+			}
+			continue;
+		}
+
+		g = f->resolver(text[i]);
+
+		curx += (float)g->xoff * scale;
+		cury += (float)g->yoff * scale;
+
+		if (prev_g != NULL && prev_g->kernings != NULL)
+		{
+			z = 0;
+			k = &prev_g->kernings[z++];
+			while (k->nextGlyph != 0)
+			{
+				if (k->nextGlyph == text[i])
+				{
+					curx += (float)k->adjustment * scale;
+					break;
+				}
+
+				k = &prev_g->kernings[z++];
+			}
+		}
+
+		if (shouldRender == 0)
+		{
+			cury = (float)y;
+			curx += (float)g->xadv * scale;
+
+			rect->w += (float)g->xadv * scale;
+
+			prev_g = g;
+
+			continue;
+		}
+
+		glEnable(GL_TEXTURE_2D);
+		glBindTexture(GL_TEXTURE_2D, (GLuint)f->texArr[g->page].systemDescriptor);
+
+		glEnable(GL_BLEND);
+		glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+
+		glMatrixMode(GL_TEXTURE);
+		glLoadIdentity();
+		glScalef(1.0f, -1.0f, 1.0f);
+
+		glBegin(GL_QUADS);
+
+		if (c != NULL)
+		{
+			glColor4f(c->r, c->g, c->b, c->a);
+		}
+
+		float basegX = g->x;
+
+		glTexCoord2f((float)basegX / (float)f->texArr[g->page].pixelWidth, (float)g->y / (float)f->texArr[g->page].pixelHeight);
+		glVertex3f(curx, cury, 0.0f);
+
+		glTexCoord2f((float)basegX / (float)f->texArr[g->page].pixelWidth + (float)g->width / (float)f->texArr[g->page].pixelWidth, (float)g->y / (float)f->texArr[g->page].pixelHeight);
+		glVertex3f((float)curx + scale * g->width, (float)cury, 0.0f);
+
+		glTexCoord2f((float)basegX / (float)f->texArr[g->page].pixelWidth + (float)g->width / (float)f->texArr[g->page].pixelWidth , (float)g->y / (float)f->texArr[g->page].pixelHeight + (float)g->height / (float)f->texArr[g->page].pixelHeight);
+		glVertex3f((float)curx + scale * g->width, (float)cury + scale * g->height, 0.0f);
+
+		glTexCoord2f((float)basegX / (float)f->texArr[g->page].pixelWidth, (float)g->y / (float)f->texArr[g->page].pixelHeight + (float)g->height / (float)f->texArr[g->page].pixelHeight);
+		glVertex3f(curx, (float)cury + scale * g->height, 0.0f);
+
+		glEnd();
+
+		glBindTexture(GL_TEXTURE_2D, 0);
+		glDisable(GL_TEXTURE_2D);
+		glDisable(GL_BLEND);
+
+		cury = (float)y;
+		curx += (float)g->xadv * scale;
+
+		prev_g = g;
+	}
+
 }
 
 void loadTexture(texture* out, image* i)
