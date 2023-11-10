@@ -4,6 +4,7 @@
 #include "game.h"
 #include "system.h"
 #include "font.h"
+#include "world.h"
 
 void spawnPlayer(world* w, texture* tex)
 {
@@ -87,6 +88,8 @@ void coreMain(void)
 
 	float scaleModifier = 0.0;
 
+	wworld* world = createWorld(32, 2137, 2137, 1);
+
 
 	while (isWindowOpen(c->targetWindow)) // Przerywamy tą pętle gdy okno zostanie zamknięte.
 	{
@@ -129,6 +132,8 @@ void coreMain(void)
 		}
 
 		beginFrame(c->targetWindow);
+
+		renderWorld(world, 0.0, 0.0, (float)c->targetWindow->width, (float)c->targetWindow->height);
 		
 		for (x = 0; x < w->entityCount; x++)
 		{
@@ -144,19 +149,19 @@ void coreMain(void)
 
 		double updateDelta = ((double)diff) / 1000.0l;
 
-		scaleModifier += updateDelta * 0.1;
+		scaleModifier = 2.0f;
 
-		if (scaleModifier >= 1.40)
-			scaleModifier = 1.40;
 
 		rect computed;
 		// TODO: fix guwno spacing liczenie width
-		drawUtf8text(c->targetWindow, ff, 1.0f * scaleModifier, NULL, "POTWORZYCA W KRAINIE CHARUW", &computed, 0);
+		drawUtf8text(c->targetWindow, ff, 1.0f * scaleModifier, NULL, "WOJTYLA SURVIWORS", &computed, 0);
 
 		rect textRect = { c->targetWindow->width / 2 - computed.w / 2, c->targetWindow->height / 2 - computed.h / 2, 0, 0 };
-		drawUtf8text(c->targetWindow, ff, 1.0f * scaleModifier, NULL, "POTWORZYCA W KRAINIE CHARUW", &textRect, 1);
+		drawUtf8text(c->targetWindow, ff, 1.0f * scaleModifier, NULL, "WOJTYLA SURVIWORS", &textRect, 1);
 
 		simulatePlayerMovement(w);
+
+		
 
 		endFrame(c->targetWindow);
 	}

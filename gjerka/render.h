@@ -1,4 +1,4 @@
-#pragma once
+﻿#pragma once
 
 #include "window.h"
 #include "image.h"
@@ -52,7 +52,23 @@ void drawUtf8text(window* wnd,
 
 #define TEXTURE_PIXEL_FORMAT_RGBA 0b1
 
-void loadTexture(texture* out, image* i);
-void freeTexture(texture* in);
+// Funckja ładująca nasz obiekt image do vRAM-u.
+// Po załadowaniu nasz obiekt image można zwolnić.
+void loadTexture(
+	texture* out,			// Uchwyt typu out, stkurtura którą wypełnimy - pasywna inicjalizacja.
+	image* i				// Uchwyt do naszego obiektu image.
+);
 
-void drawRectangle(texture* tex, rect* textureCoords, rect* coords, color* c, uint64_t flags);
+// Funckja zwalniająca teksturę z vRAM-u.
+void freeTexture(
+	texture* in					// Uchwyt do tekstury do zwolnienia.
+);
+
+// Funckja do narysowania prostokąta (opcjonalnie oteksturowanego/z nałożonym kolorem/lub z teksturą i filtrem koloru),
+void drawRectangle(
+	texture* tex,			// tekstura którą chcemy nałożyć (opcjonalna) - NULL jeśli nie chcemy tekstury
+	rect* textureCoords,	// wskaźnik do struktury rect (prostokąta) tekstury do nałożenia na naszym prostokącie (opcjonalny) - NULL jeśli nie używamy tekstury
+	rect* coords,			// wskaźnik do struktury rect (prostokąta) względem naszego okna (w pikselach)
+	color* c,				// wskaźnik do struktury color z maską RGBA koloru (opcjonalny) - NULL jeśli nie chcemu używać filtra koloru
+	uint64_t flags			// flagi połączone operatorem | (możliwe opcje: ) lub 0 jeśli nie chcemy używać żadnych flag
+);

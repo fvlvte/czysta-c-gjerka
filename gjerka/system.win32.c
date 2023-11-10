@@ -92,3 +92,12 @@ uint64_t knurstrlen(const char* str)
 
 	return result;
 }
+
+void knurcopy(void* dst, void* src, uint64_t size)
+{
+	uint64_t xd = 0;
+	while (xd < size)
+	{
+		*((uint8_t*)dst + xd) = (*((uint8_t*)src + xd++));
+	}
+}

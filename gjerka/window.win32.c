@@ -130,7 +130,7 @@ window* createWindow(const char* title, unsigned int width, unsigned int height)
 		NULL // Nieistotny parametr więc NULL.
 	);
 
-	SetWindowLongPtrW(wnd, GWLP_USERDATA, instance);
+	SetWindowLongPtrW(wnd, GWLP_USERDATA, (LONG_PTR)instance);
 
 	// No i już prawie sukces boży.
 	// Tylko nasze okno które się utworzyło jest niewidoczne.

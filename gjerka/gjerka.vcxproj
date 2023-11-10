@@ -156,6 +156,7 @@
     <ClCompile Include="render.opengl.c" />
     <ClCompile Include="system.win32.c" />
     <ClCompile Include="window.win32.c" />
+    <ClCompile Include="world.c" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="core.h" />
@@ -165,6 +166,7 @@
     <ClInclude Include="render.h" />
     <ClInclude Include="system.h" />
     <ClInclude Include="window.h" />
+    <ClInclude Include="world.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
