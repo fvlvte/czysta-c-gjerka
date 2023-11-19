@@ -61,6 +61,14 @@ int64_t writeFile(file f, void* in, uint64_t size)
 	return -1;
 }
 
+void seekFile(file f, uint64_t offset)
+{
+	LARGE_INTEGER li;
+	LARGE_INTEGER out;
+	li.QuadPart = offset;
+	SetFilePointerEx((HANDLE)f, li, &out, FILE_BEGIN);
+}
+
 uint64_t fileSize(file f)
 {
 	LARGE_INTEGER li;

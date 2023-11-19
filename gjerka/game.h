@@ -21,8 +21,13 @@ struct _entityBase
 };
 typedef struct _entityBase entityBase;
 
-struct _world
+#define STATE_GAME		0x00
+#define STATE_EDITOR	0x01
+
+struct _game
 {
+	uint64_t state;
+
 	rect cameraPosition;
 
 	entityBase* playerEntity;
@@ -35,7 +40,7 @@ struct _world
 	uint64_t entityCount;
 	entityBase entityTable[ENTITY_MAX];
 };
-typedef struct _world world;
+typedef struct _game game;
 
 #define PLAYER_MOMENTUM_MUL_MAX 2.137
 

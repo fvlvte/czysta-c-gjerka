@@ -3,6 +3,10 @@
 #include "render.h"
 #include "font.h"
 
+#define GL_CLAMP_TO_EDGE                        0x812F
+#define GL_CLAMP                                0x2900
+#define GL_CLAMP_TO_BORDER                      0x812D
+
 void initRenderer(window* w)
 {
 	fontManagerInit();
@@ -160,12 +164,12 @@ void loadTexture(
 	glBindTexture(GL_TEXTURE_2D, tex); // Mówimy OpenGL-owi z której tekstury chcemy korzystać.
 
 	// Ustawiamy filtr skalowania w górę.
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 	// Ustawiamy filtr skalowania w dół.
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
 
 	// Kopiujemy z RAM-u do vRAMU surowe piskele obrazu.
-	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, (GLsizei)i->width, (GLsizei)i->height, 0, GL_BGRA_EXT, GL_UNSIGNED_BYTE, i->data);
+	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA8, (GLsizei)i->width, (GLsizei)i->height, 0, GL_BGRA_EXT, GL_UNSIGNED_BYTE, i->data);
 
 	// Ustawiamy pomocnicze informacje w naszej strukturze texture.
 	out->pixelHeight = i->height;

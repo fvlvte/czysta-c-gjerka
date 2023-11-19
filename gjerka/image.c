@@ -41,6 +41,8 @@ image* loadBitmap(const char* path)
 	i->height = _i.height;
 	i->width = _i.width;
 
+	seekFile(f, h.offBits);
+
 	szIn = readFile(f, i->data, sz);
 
 	if (szIn != sz)

@@ -6,7 +6,7 @@
 #include "font.h"
 #include "world.h"
 
-void spawnPlayer(world* w, texture* tex)
+void spawnPlayer(game* w, texture* tex)
 {
 	entityBase* e = &w->entityTable[w->entityCount++];
 	playerBase* p = knurmalloc(sizeof(*p));
@@ -30,7 +30,7 @@ void spawnPlayer(world* w, texture* tex)
 	w->playerEntity = e;
 }
 
-void simulatePlayerMovement(world* w)
+void simulatePlayerMovement(game* w)
 {
 	uint64_t current = highResolutionTimestamp();
 
@@ -60,15 +60,100 @@ void simulatePlayerMovement(world* w)
 	eb->vY += pb->speedPerSecond * updateDelta * w->movingVectorY * pb->momentum;
 }
 
+void handleGameState(core* c, game* g, wworld* w)
+{
+	font* ff = getDefaultFont();
+	uint64_t x;
+
+	for (x = 0; x < c->targetWindow->inputStackSize; x++)
+	{
+		input* input = &c->targetWindow->inputStack[x];
+
+		if (input->type == EVENT_KEYDOWN)
+		{
+			if (input->paramA == 'W')
+			{
+				g->movingVectorY = -1.0f;
+			}
+			else if (input->paramA == 'S')
+			{
+				g->movingVectorY = 1.0f;
+			}
+			else if (input->paramA == 'A')
+			{
+				g->movingVectorX = -1.0f;
+			}
+			else if (input->paramA == 'D')
+			{
+				g->movingVectorX = 1.0f;
+			}
+		}
+		if (input->type == EVENT_KEYUP)
+		{
+			if (input->paramA == 'W' || input->paramA == 'S')
+			{
+				g->movingVectorY = 0.0f;
+			}
+			else if (input->paramA == 'A' || input->paramA == 'D')
+			{
+				g->movingVectorX = 0.0f;
+			}
+		}
+	}
+
+	beginFrame(c->targetWindow);
+
+	renderWorld(w, 0.0, 0.0, (float)c->targetWindow->width, (float)c->targetWindow->height);
+
+	for (x = 0; x < g->entityCount; x++)
+	{
+		entityBase* e = &g->entityTable[x];
+
+		rect computedDimensions = { e->vX, e->vY, e->width, e->height };
+		drawRectangle(e->texture, &e->textureDimensions, &computedDimensions, NULL, 0);
+	}
+
+	uint64_t current = highResolutionTimestamp();
+
+	uint64_t diff = current - g->previousUpdateTick;
+
+	rect computed;
+	drawUtf8text(c->targetWindow, ff, 2.0f, NULL, "WOJTYLA SURVIWORS", &computed, 0);
+
+	rect textRect = { c->targetWindow->width / 2 - computed.w / 2, c->targetWindow->height / 2 - computed.h / 2, 0, 0 };
+	drawUtf8text(c->targetWindow, ff, 2.0f, NULL, "WOJTYLA SURVIWORS", &textRect, 1);
+
+	simulatePlayerMovement(g);
+
+	endFrame(c->targetWindow);
+}
+
+void handleGameEditor(core* c, game* g, wworld* w)
+{
+	uint64_t x;
+
+	for (x = 0; x < c->targetWindow->inputStackSize; x++)
+	{
+		input* input = &c->targetWindow->inputStack[x];
+	}
+
+	beginFrame(c->targetWindow);
+
+	renderWorldEditor(w);
+
+	endFrame(c->targetWindow);
+}
+
 void coreMain(void)
 {
 	core *c = knurmalloc(sizeof(*c));
 
-	world *w = knurmalloc(sizeof(*w));
+	game *g = knurmalloc(sizeof(*g));
 
-	w->previousUpdateTick = highResolutionTimestamp();
+	g->previousUpdateTick = highResolutionTimestamp();
 
-	w->entityCount = 0;
+	g->entityCount = 0;
+	g->state = STATE_GAME;
 	
 	c->targetWindow = createWindow("uwu kocham widzuw uwu", 800, 600);
 
@@ -79,12 +164,9 @@ void coreMain(void)
 
 	loadTexture(&t, i);
 
-	spawnPlayer(w, &t);
+	spawnPlayer(g, &t);
 
 	freeImage(i);
-
-	font* ff = getDefaultFont();
-
 
 	float scaleModifier = 0.0;
 
@@ -95,74 +177,17 @@ void coreMain(void)
 	{
 		updateWindow(c->targetWindow); // Funkcja która przetwarza eventy które okno otrzymało od systemu operacyjnego i na nie reaguje.
 
-		for (x = 0; x < c->targetWindow->inputStackSize; x++)
+	
+		switch (g->state)
 		{
-			input* input = &c->targetWindow->inputStack[x];
-
-			if (input->type == EVENT_KEYDOWN)
-			{
-				if (input->paramA == 'W')
-				{
-					w->movingVectorY = -1.0f;
-				}
-				else if (input->paramA == 'S')
-				{
-					w->movingVectorY = 1.0f;
-				}
-				else if (input->paramA == 'A')
-				{
-					w->movingVectorX = -1.0f;
-				}
-				else if (input->paramA == 'D')
-				{
-					w->movingVectorX = 1.0f;
-				}
-			}
-			if (input->type == EVENT_KEYUP)
-			{
-				if (input->paramA == 'W' || input->paramA == 'S')
-				{
-					w->movingVectorY = 0.0f;
-				}
-				else if (input->paramA == 'A' || input->paramA == 'D')
-				{
-					w->movingVectorX = 0.0f;
-				}
-			}
+		case STATE_GAME:
+			handleGameState(c, g, world);
+			break;
+		case STATE_EDITOR:
+			handleGameEditor(c, g, world);
+			break;
+		default:
+			break;
 		}
-
-		beginFrame(c->targetWindow);
-
-		renderWorld(world, 0.0, 0.0, (float)c->targetWindow->width, (float)c->targetWindow->height);
-		
-		for (x = 0; x < w->entityCount; x++)
-		{
-			entityBase* e = &w->entityTable[x];
-
-			rect computedDimensions = { e->vX, e->vY, e->width, e->height };
-			drawRectangle(e->texture, &e->textureDimensions, &computedDimensions, NULL, 0);
-		}
-
-		uint64_t current = highResolutionTimestamp();
-
-		uint64_t diff = current - w->previousUpdateTick;
-
-		double updateDelta = ((double)diff) / 1000.0l;
-
-		scaleModifier = 2.0f;
-
-
-		rect computed;
-		// TODO: fix guwno spacing liczenie width
-		drawUtf8text(c->targetWindow, ff, 1.0f * scaleModifier, NULL, "WOJTYLA SURVIWORS", &computed, 0);
-
-		rect textRect = { c->targetWindow->width / 2 - computed.w / 2, c->targetWindow->height / 2 - computed.h / 2, 0, 0 };
-		drawUtf8text(c->targetWindow, ff, 1.0f * scaleModifier, NULL, "WOJTYLA SURVIWORS", &textRect, 1);
-
-		simulatePlayerMovement(w);
-
-		
-
-		endFrame(c->targetWindow);
 	}
 }

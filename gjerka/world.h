@@ -25,5 +25,26 @@ struct __world
 };
 typedef struct __world wworld;
 
+struct _serializedWorldTilesetTable
+{
+	uint64_t		id;
+	uint8_t			assetPath[256];
+};
+
+struct _serializedWorldHdr
+{
+	uint64_t magic;
+	uint64_t version;
+
+	uint64_t tilesetCount;
+	// asset table
+	uint64_t tileWidth;
+	uint64_t tileHeight;
+
+
+};
+typedef struct _serializedWorldHdr serializedWorldHeader;
+
 wworld* createWorld(uint64_t tileResolution, uint64_t width, uint64_t height, uint64_t layers);
+void renderWorldEditor(wworld* world);
 void renderWorld(wworld* world, float cameraX, float cameraY, float cameraWidth, float cameraHeight);
