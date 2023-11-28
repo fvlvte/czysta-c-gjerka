@@ -148,8 +148,11 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="assetManager.c" />
     <ClCompile Include="core.c" />
     <ClCompile Include="entry.c" />
+    <ClCompile Include="ext.windows.c" />
+    <ClCompile Include="ext.h" />
     <ClCompile Include="font.c" />
     <ClCompile Include="font_0_64.c" />
     <ClCompile Include="image.c" />
@@ -159,6 +162,7 @@
     <ClCompile Include="world.c" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="assetManager.h" />
     <ClInclude Include="core.h" />
     <ClInclude Include="font.h" />
     <ClInclude Include="game.h" />

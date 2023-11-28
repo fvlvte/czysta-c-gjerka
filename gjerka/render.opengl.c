@@ -230,6 +230,11 @@ void drawRectangle(
 		// Uruchamiamy moduł teksturowania.
 		glEnable(GL_TEXTURE_2D);
 	}
+	else
+	{
+		glEnable(GL_BLEND);
+		glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+	}
 
 	// Rozpoczynamy rysowanie prostokąta.
 	glBegin(GL_QUADS);
@@ -282,5 +287,9 @@ void drawRectangle(
 		glDisable(GL_TEXTURE_2D);
 		// Resetujemy używaną teksture (ustawiamy na 0 = brak tekstury).
 		glBindTexture(GL_TEXTURE_2D, 0);
+	}
+	else
+	{
+		glDisable(GL_BLEND);
 	}
 }

@@ -2,6 +2,8 @@
 #include "system.h"
 #include "image.h"
 #include "core.h"
+#include "ext.h"
+#include "assetManager.h"
 
 // Konstrukt funckji
 // {typ} {nazwa symbolu}({typ} {nazwa})
@@ -42,6 +44,7 @@
 // Jeśli chcemy zwrócić status code i prawidłowo zakończyć program musimy wywołać syscall który to dla nas zrobi (na WinAPI jest to ExitProcess(code) na -nixach jest to exit(code)).
 void entry()
 {
+	initExtLib();
 	coreMain();
 	
 

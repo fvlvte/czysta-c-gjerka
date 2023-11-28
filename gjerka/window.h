@@ -6,6 +6,7 @@
 
 #define EVENT_KEYDOWN	1
 #define EVENT_KEYUP		2
+#define EVENT_MOUSE_LB	3
 
 struct _input
 {

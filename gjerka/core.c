@@ -5,6 +5,12 @@
 #include "system.h"
 #include "font.h"
 #include "world.h"
+#include "ext.h"
+#include "assetManager.h"
+
+static editor_state EDITOR_STATE;
+
+static assetManager ASSET_MANAGER;
 
 void spawnPlayer(game* w, texture* tex)
 {
@@ -58,6 +64,31 @@ void simulatePlayerMovement(game* w)
 
 	eb->vX += pb->speedPerSecond * updateDelta * w->movingVectorX * pb->momentum;
 	eb->vY += pb->speedPerSecond * updateDelta * w->movingVectorY * pb->momentum;
+}
+
+// Zwraca poprzedni stan.
+uint64_t switchGameState(game* g, wworld* w, uint64_t state)
+{
+	uint64_t previousState = g->state;
+
+	// Jak by to reactoweic ujoł - componentWillUnmount
+	switch (previousState)
+	{
+	default:
+		break;
+	}
+
+
+	// Hehe react componentWillMount xD
+	switch (state)
+	{
+	case STATE_EDITOR:
+		EDITOR_STATE.selectedX = 0;
+		EDITOR_STATE.selectedY = 0;
+		break;
+	default:
+		break;
+	}
 }
 
 void handleGameState(core* c, game* g, wworld* w)
@@ -135,11 +166,35 @@ void handleGameEditor(core* c, game* g, wworld* w)
 	for (x = 0; x < c->targetWindow->inputStackSize; x++)
 	{
 		input* input = &c->targetWindow->inputStack[x];
+		
+		if (input->type == EVENT_MOUSE_LB)
+		{
+			uint64_t mX = input->paramA / 32;
+			uint64_t mY = input->paramB / 32;
+
+			EDITOR_STATE.selectedX = mX;
+			EDITOR_STATE.selectedY = mY;
+		}
 	}
 
 	beginFrame(c->targetWindow);
 
-	renderWorldEditor(w);
+	renderWorldEditor(w, &EDITOR_STATE);
+
+	rect textTarget = { 0.0f, c->targetWindow->height - 40, 0.0f, 0.0f };
+	color cc = { 1.0f, 1.0f, 1.0f, 1.0f };
+
+	char buffer[2137];
+	sprintf_t sprintf = getExtSprintf();
+	sprintf(buffer, "Selected X: %d Y: %d", EDITOR_STATE.selectedX, EDITOR_STATE.selectedY);
+	
+	drawUtf8text(c->targetWindow, getDefaultFont(), 1.0f, &cc, buffer, &textTarget, 1);
+
+
+	rect textureRect = { 0.0f, 0.0f, 290.0f / 1024.0f, 64.0f / 1024.0f };
+	rect screenRect = { (float)c->targetWindow->width - 150.0f, (float)c->targetWindow->height - 40.0f, 290.0f / 2, 64.0f / 2 };
+	abstractAssetEntry* ase = assetManagerFetch(&ASSET_MANAGER, ASSET_UI_COMMON);
+	drawRectangle(ase->descriptor, &textureRect, &screenRect, &cc, 0);
 
 	endFrame(c->targetWindow);
 }
@@ -153,9 +208,12 @@ void coreMain(void)
 	g->previousUpdateTick = highResolutionTimestamp();
 
 	g->entityCount = 0;
-	g->state = STATE_GAME;
+	g->state = STATE_EDITOR;
 	
 	c->targetWindow = createWindow("uwu kocham widzuw uwu", 800, 600);
+
+	assetManagerInit(&ASSET_MANAGER);
+	assetManagerLoadTexture(&ASSET_MANAGER, ASSET_UI_COMMON, "asset/ui.bmp");
 
 	texture t;
 

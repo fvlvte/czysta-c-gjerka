@@ -74,10 +74,14 @@ void renderWorld(wworld* world, float cameraX, float cameraY, float cameraWidth,
 	}
 }
 
-void renderWorldEditor(wworld* world)
+void renderWorldEditor(wworld* world, editor_state* state)
 {
 	texture* t = world->layers[0]->tileset;
 	rect texC = { 0.0f, 0.0f, 1.0f, 1.0f };
 	rect screenC = { 0.0f, 0.0f, (float)t->pixelWidth, (float)t->pixelHeight };
 	drawRectangle(t, &texC, &screenC, NULL, 0);
+
+	rect selectionRect = { (float)state->selectedX * 32.0f, (float)state->selectedY * 32.0f, 32.0f, 32.0f};
+	color selectionOverlay = { 1.0f, 0.0f, 0.0f, 0.2f };
+	drawRectangle(NULL, NULL, &selectionRect, &selectionOverlay, 0);
 }

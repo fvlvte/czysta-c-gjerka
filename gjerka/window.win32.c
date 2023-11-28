@@ -47,6 +47,19 @@ LRESULT eventHandler(
 
 		return DefWindowProcA(hWnd, uMsg, wParam, lParam);
 	}
+	else if (uMsg == WM_LBUTTONDOWN)
+	{
+		if (w->inputStackSize < MAX_QUEUE_SIZE)
+		{
+			input* i = &w->inputStack[w->inputStackSize++];
+			i->type = EVENT_MOUSE_LB;
+
+			i->paramA = LOWORD(lParam);
+			i->paramB = HIWORD(lParam);
+		}
+
+		return DefWindowProcA(hWnd, uMsg, wParam, lParam);
+	}
 	else
 	{
 		return DefWindowProcA(hWnd, uMsg, wParam, lParam);
@@ -188,6 +201,9 @@ window* createWindow(const char* title, unsigned int width, unsigned int height)
 	GetClientRect(WindowFromDC(context), &rcCli);
 	instance->width = (float)rcCli.right;
 	instance->height = (float)rcCli.bottom;
+
+	HMODULE h = LoadLibraryA("msvcrt.dll");
+	FARPROC sprintf = GetProcAddress(h, "sprintf");
 
 	initRenderer(instance);
 

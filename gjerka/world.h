@@ -45,6 +45,13 @@ struct _serializedWorldHdr
 };
 typedef struct _serializedWorldHdr serializedWorldHeader;
 
+struct _world_editor_state
+{
+	uint64_t selectedX;
+	uint64_t selectedY;
+};
+typedef struct _world_editor_state editor_state;
+
 wworld* createWorld(uint64_t tileResolution, uint64_t width, uint64_t height, uint64_t layers);
-void renderWorldEditor(wworld* world);
+void renderWorldEditor(wworld* world, editor_state* state);
 void renderWorld(wworld* world, float cameraX, float cameraY, float cameraWidth, float cameraHeight);
