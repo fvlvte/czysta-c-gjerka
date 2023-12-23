@@ -186,6 +186,8 @@ window* createWindow(const char* title, unsigned int width, unsigned int height)
 
 	HGLRC glInstance = wglCreateContext(context);
 
+	HGLRC glInstance2 = wglCreateContext(context);
+
 	instance->framesPerformanceStart = highResolutionTimestamp();
 	instance->framesRendered = 0;
 

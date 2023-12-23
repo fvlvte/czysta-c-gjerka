@@ -7,6 +7,8 @@
 #include "world.h"
 #include "ext.h"
 #include "assetManager.h"
+#include "view.h"
+#include "view_mainMenu.h"
 
 static editor_state EDITOR_STATE;
 
@@ -202,50 +204,21 @@ void handleGameEditor(core* c, game* g, wworld* w)
 void coreMain(void)
 {
 	core *c = knurmalloc(sizeof(*c));
-
-	game *g = knurmalloc(sizeof(*g));
-
-	g->previousUpdateTick = highResolutionTimestamp();
-
-	g->entityCount = 0;
-	g->state = STATE_EDITOR;
 	
-	c->targetWindow = createWindow("uwu kocham widzuw uwu", 800, 600);
+	c->targetWindow = createWindow("SUPER AUTO KNURS", 800, 600);
 
-	assetManagerInit(&ASSET_MANAGER);
-	assetManagerLoadTexture(&ASSET_MANAGER, ASSET_UI_COMMON, "asset/ui.bmp");
+	view_manager* mgr = view_manager_init();
 
-	texture t;
+	
+	view_mainMenu* mainMenu = view_mainMenu_alloc();
 
-	image* i = loadBitmap("uwu.bmp");
-	int x;
+	view_manager_setView(mgr, mainMenu);
 
-	loadTexture(&t, i);
-
-	spawnPlayer(g, &t);
-
-	freeImage(i);
-
-	float scaleModifier = 0.0;
-
-	wworld* world = createWorld(32, 2137, 2137, 1);
-
+	view_manager_bindWindow(mgr, c->targetWindow);
 
 	while (isWindowOpen(c->targetWindow)) // Przerywamy tą pętle gdy okno zostanie zamknięte.
 	{
 		updateWindow(c->targetWindow); // Funkcja która przetwarza eventy które okno otrzymało od systemu operacyjnego i na nie reaguje.
-
-	
-		switch (g->state)
-		{
-		case STATE_GAME:
-			handleGameState(c, g, world);
-			break;
-		case STATE_EDITOR:
-			handleGameEditor(c, g, world);
-			break;
-		default:
-			break;
-		}
+		view_manager_onUpdate(mgr);
 	}
 }

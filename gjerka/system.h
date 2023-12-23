@@ -20,4 +20,6 @@ uint64_t fileSize(file f);
 uint64_t knurstrlen(const char* str);
 void knurcopy(void* dst, void* src, uint64_t size);
 
+void knurZeroMemory(void* dst, uint64_t size);
+
 unsigned long long highResolutionTimestamp();
